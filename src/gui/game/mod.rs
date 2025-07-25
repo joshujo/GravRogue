@@ -1,14 +1,16 @@
-use raylib::prelude::{RaylibDraw, RaylibDrawHandle, Color};
+use arc_swap::ArcSwap;
+use raylib::{math::Vector2, prelude::{Color, RaylibDraw, RaylibDrawHandle}};
 mod world;
 
-use crate::gui::Gui;
+use crate::{core::channel_data::RenderData, gui::{game::world::world, Gui}};
 use super::fonts::Font::*;
 
-pub fn game(gui: &mut Gui, rl: &mut RaylibDrawHandle) {
-
+pub fn game(gui: &mut Gui, rl: &mut RaylibDrawHandle, render_data: &ArcSwap<RenderData>) {
+    gui.camera.offset = Vector2::new(gui.window_data.center_x(), gui.window_data.center_y());
 
     {
         rl.draw_text("In game", gui.window_data.center_x() as i32, gui.window_data.center_y() as i32, 30, Color::WHITE);
+        world(gui, rl, render_data);
     }
 
     {

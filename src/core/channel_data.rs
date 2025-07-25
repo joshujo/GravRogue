@@ -16,6 +16,7 @@ pub enum Output {
     
 }
 
+#[derive(Default)]
 pub struct RenderData {
-    data: Vec<Box<dyn Render>>
+    pub data: Vec<Box<dyn Render + Send + Sync>>
 }

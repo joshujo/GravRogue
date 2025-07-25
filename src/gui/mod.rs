@@ -1,6 +1,7 @@
 use std::collections::HashMap;
 
-use crate::{core::{channels::GuiChannels, GameState, ImguiCacheBuffer}, gui::{fonts::{fonts, Font}, game::game, main_menu::main_menu, window_data::WindowData}};
+use crate::{core::{channel_data::RenderData, channels::GuiChannels, GameState, ImguiCacheBuffer}, gui::{fonts::{fonts, Font}, game::game, main_menu::main_menu, window_data::WindowData}};
+use arc_swap::ArcSwap;
 use imgui::{self, Context, FontId};
 use raylib::{camera::Camera2D, math::Vector2, prelude::RaylibDrawHandle, RaylibHandle, RaylibThread};
 use raylib_imgui_rs::{self, Renderer};
@@ -48,7 +49,7 @@ impl <'a>Gui<'a> {
         }
     }
 
-    pub fn tick(&mut self, rl: &mut RaylibDrawHandle) {
+    pub fn tick(&mut self, rl: &mut RaylibDrawHandle, render_data: &ArcSwap<RenderData>) {
         self.window_data.update(rl);
         self.renderer.update(&mut self.imgui, rl);
 
@@ -59,7 +60,7 @@ impl <'a>Gui<'a> {
 
         match self.state {
             GameState::MainMenu => main_menu(self),
-            GameState::Game => game(self, rl),
+            GameState::Game => game(self, rl, render_data),
         }
 
         self.renderer.render(&mut self.imgui, rl);

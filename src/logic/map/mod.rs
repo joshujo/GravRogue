@@ -9,9 +9,11 @@ use crate::logic::map::bodies::{Acceleration, Density, Position, Size, Velocity}
 pub mod bodies;
 pub mod generate_galaxy;
 
-pub fn map(world: &mut World) {
+pub fn map(world: &mut World, dt: &f64) {
     world.run(gravity_force);
-    world.run(apply_forces);
+    world.run(|position: ViewMut<Position>, velocity: ViewMut<Velocity>, acceleration: ViewMut<Acceleration>| {
+        apply_forces(position, velocity, acceleration, dt);
+    });
 }
 
 fn gravity_force(mut acceleration: ViewMut<Acceleration>, density: View<Density>, size: View<Size>, position: View<Position>) {
@@ -26,7 +28,7 @@ fn gravity_force(mut acceleration: ViewMut<Acceleration>, density: View<Density>
 
     let mut accel_bodies: Vec<_> = (&mut acceleration, &density, &position, &size).iter().map(|(acc, dens, pos, size)| {
         let mass = dens.0 * f64::powi(size.0, 2) * f64::consts::PI;
-        (pos.0, mass, acc.0)
+        (pos.0, mass, acc)
     }).collect();
 
     accel_bodies.par_iter_mut()
@@ -46,21 +48,19 @@ fn gravity_force(mut acceleration: ViewMut<Acceleration>, density: View<Density>
             acc += direction * force_magnitude / *mass_a;
         }
 
-        *acc_a = acc
+        acc_a.0 = acc
     });
 }
 
-fn apply_forces(mut position: ViewMut<Position>, mut velocity: ViewMut<Velocity>, acceleration: View<Acceleration>) {
-    let mut bodies: Vec<_> = (&mut position, &mut velocity, &acceleration)
+fn apply_forces(mut position: ViewMut<Position>, mut velocity: ViewMut<Velocity>, mut acceleration: ViewMut<Acceleration>, dt: &f64) {
+    let mut bodies: Vec<_> = (&mut position, &mut velocity, &mut acceleration)
         .iter()
-        .map(|(pos, vel, acc)| {
-            (pos.0, vel.0, acc.0)
-        }).collect();
+        .collect();
 
     bodies.par_iter_mut()
         .for_each(|(pos, vel, acc)| {
-            *vel += *acc;
-            *pos += *vel;
-            *acc = DVec2::ZERO
+            vel.0 += acc.0 * dt;
+            pos.0 += vel.0 * dt;
+            acc.0 = DVec2::ZERO
         });
 }
