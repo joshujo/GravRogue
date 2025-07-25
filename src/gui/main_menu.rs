@@ -10,7 +10,7 @@ pub(in crate::gui) fn main_menu(data: &mut Gui) {
         let ui_height = 500.0 * data.window_data.height_scale;
 
         let title_text = "Main menu";
-        // let text_scale = data.window_data.scale;
+        let text_scale = data.window_data.scale;
 
         let center_width = ui_width / 2.0;
         let center_height = ui_height / 2.0;
@@ -22,6 +22,7 @@ pub(in crate::gui) fn main_menu(data: &mut Gui) {
             .collapsible(false)
             .no_decoration()
             .build(|| {
+                ui.set_window_font_scale(text_scale);
                 let font = ui.push_font(*data.fonts.get(&ChakraPetchTitle).unwrap());
                 let title_size = ui.calc_text_size(title_text);
                 let cursor_pos = ui.cursor_pos();

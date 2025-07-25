@@ -1,5 +1,7 @@
-use raylib::camera::{self, Camera2D};
+use raylib::{camera::{self, Camera2D}, prelude::RaylibDrawHandle};
 
-pub fn world() {
+use crate::gui::Gui;
+
+pub fn world(gui: Gui, rl: &mut RaylibDrawHandle) {
 
 }
