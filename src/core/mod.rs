@@ -2,7 +2,8 @@ pub mod channel_data;
 pub mod channels;
 
 pub enum GameState {
-    MainMenu
+    MainMenu,
+    Game
 }
 
 pub enum ImguiCacheBuffer {

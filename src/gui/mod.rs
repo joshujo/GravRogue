@@ -1,12 +1,13 @@
 use std::collections::HashMap;
 
-use crate::{core::{channels::GuiChannels, GameState, ImguiCacheBuffer}, gui::{fonts::{fonts, Font}, main_menu::main_menu, window_data::WindowData}};
-use imgui::{self, Context, FontId, FontSource};
-use raylib::{prelude::RaylibDrawHandle, RaylibHandle, RaylibThread};
+use crate::{core::{channels::GuiChannels, GameState, ImguiCacheBuffer}, gui::{fonts::{fonts, Font}, game::game, main_menu::main_menu, window_data::WindowData}};
+use imgui::{self, Context, FontId};
+use raylib::{camera::Camera2D, math::Vector2, prelude::RaylibDrawHandle, RaylibHandle, RaylibThread};
 use raylib_imgui_rs::{self, Renderer};
 mod main_menu;
 mod fonts;
 mod window_data;
+mod game;
 
 #[allow(dead_code)]
 pub struct Gui<'a> {
@@ -16,7 +17,8 @@ pub struct Gui<'a> {
     fonts: HashMap<Font, FontId>,
     renderer: Renderer,
     imgui_cache: HashMap<ImguiCacheBuffer, Box<dyn ImguiCache>>,
-    window_data: WindowData
+    window_data: WindowData,
+    camera: Camera2D
 }
 
 pub trait ImguiCache {}
@@ -25,9 +27,14 @@ impl <'a>Gui<'a> {
     pub fn new(rl: &mut RaylibHandle, thread: &RaylibThread, channels: &'a GuiChannels) -> Self {
         let mut imgui = Context::create();
         let fonts = fonts(&mut imgui);
-        imgui.fonts().add_font(&[FontSource::DefaultFontData { config: None }]);
         let renderer = Renderer::create(&mut imgui,rl, &thread);
         let window_data = WindowData::new(rl);
+        let camera = Camera2D {
+            offset: Vector2::new(window_data.center_x(), window_data.center_y()),
+            target: Vector2::new(0.0, 0.0),
+            rotation: 0.0,
+            zoom: 1.0
+        };
 
         Gui { 
             state: GameState::MainMenu,
@@ -36,7 +43,8 @@ impl <'a>Gui<'a> {
             fonts,
             renderer,
             imgui_cache: HashMap::new(),
-            window_data
+            window_data,
+            camera
         }
     }
 
@@ -44,8 +52,14 @@ impl <'a>Gui<'a> {
         self.window_data.update(rl);
         self.renderer.update(&mut self.imgui, rl);
 
+        match self.channels.start_game_r.try_recv() {
+            Ok(_) => self.state = GameState::Game,
+            Err(_) => ()
+        }
+
         match self.state {
             GameState::MainMenu => main_menu(self),
+            GameState::Game => game(self, rl),
         }
 
         self.renderer.render(&mut self.imgui, rl);
