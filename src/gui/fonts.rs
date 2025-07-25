@@ -5,6 +5,7 @@ use imgui::{Context, FontId, FontSource};
 #[derive(Hash, PartialEq, Eq, PartialOrd, Ord)]
 pub enum Font {
     ChakraPetchBold,
+    ChakraPetchTitle,
     ChakraPetchBoldItalic,
     ChakraPetchItalic,
     ChakraPetchLight,
@@ -26,6 +27,10 @@ pub fn fonts(imgui: &mut Context) -> HashMap<Font, FontId> {
     let data = include_bytes!("../../fonts/Chakra_Petch/ChakraPetch-Bold.ttf");
     let chakra_petch_bold = imgui.fonts().add_font(&[FontSource::TtfData { data: data, size_pixels: 30.0, config: None }]);
     hashmap.insert(Font::ChakraPetchBold, chakra_petch_bold);
+
+    let data = include_bytes!("../../fonts/Chakra_Petch/ChakraPetch-Bold.ttf");
+    let chakra_petch_title = imgui.fonts().add_font(&[FontSource::TtfData { data: data, size_pixels: 100.0, config: None }]);
+    hashmap.insert(Font::ChakraPetchTitle, chakra_petch_title);
 
     let data = include_bytes!("../../fonts/Chakra_Petch/ChakraPetch-BoldItalic.ttf");
     let chakra_petch_bold_italic = imgui.fonts().add_font(&[FontSource::TtfData { data: data, size_pixels: 30.0, config: None }]);

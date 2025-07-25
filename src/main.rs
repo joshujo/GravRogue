@@ -1,6 +1,6 @@
 use std::thread;
 
-use grav_rogue::{gui::Gui, logic::logic};
+use grav_rogue::{core::channels::Channel, gui::Gui, logic::logic};
 use raylib::prelude::*;
 
 fn main() {
@@ -8,13 +8,21 @@ fn main() {
         .size(1920, 1080)
         .title("GravRogue")
         .vsync()
+        .resizable()
         .build();
 
-    thread::spawn(|| {
-        logic();
+    let channels = Channel::new();
+    let logic_channels = channels.logic_channels();
+    let gui_channels = channels.gui_channels();
+
+    rl.set_window_min_size(1920, 1080);
+    thread::spawn(move || {
+        logic(&logic_channels);
     });
 
-    let mut gui = Gui::new(&mut rl, &thread);
+    
+
+    let mut gui = Gui::new(&mut rl, &thread, &gui_channels);
 
     while !rl.window_should_close() {
         let mut d = rl.begin_drawing(&thread);
