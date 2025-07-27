@@ -34,7 +34,7 @@ impl <'a>Gui<'a> {
             offset: Vector2::new(window_data.center_x(), window_data.center_y()),
             target: Vector2::new(0.0, 0.0),
             rotation: 0.0,
-            zoom: 1.0
+            zoom: 0.001
         };
 
         Gui { 

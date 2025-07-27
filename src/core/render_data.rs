@@ -12,6 +12,6 @@ pub struct Circle {
 
 impl Render for Circle {
     fn draw(&self, rl: &mut raylib::prelude::RaylibMode2D<'_, RaylibDrawHandle<'_>>) {
-        rl.draw_circle(self.position.x as i32, self.position.y as i32, self.radius, self.colour);
+        rl.draw_circle((self.position.x * 1000.0) as i32, (self.position.y * 1000.0) as i32, self.radius * 1000.0, self.colour);
     }
 }

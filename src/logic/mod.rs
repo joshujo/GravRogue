@@ -1,11 +1,11 @@
-use std::sync::Arc;
+use std::{sync::Arc, time::Duration};
 
 use arc_swap::ArcSwap;
 use raylib::math::Vector2;
 use rayon::iter::{IntoParallelRefIterator, ParallelIterator};
 use shipyard::{IntoIter, View, World};
 
-use crate::{core::{channel_data::{RenderData, StartGame}, channels::LogicChannels, render_data::{Circle, Render}}, logic::map::{bodies::{Colour, Position, Size}, generate_galaxy}};
+use crate::{core::{channel_data::{PlayerData, RenderData, StartGame}, channels::LogicChannels, render_data::{Circle, Render}}, logic::map::{bodies::{Colour, Planet, Player, Position, Size}, generate_galaxy}};
 mod map;
 
 pub fn logic(logic_channels: &LogicChannels, render_data: &ArcSwap<RenderData>) {
@@ -19,9 +19,13 @@ pub fn logic(logic_channels: &LogicChannels, render_data: &ArcSwap<RenderData>) 
         loop {
             let now = std::time::Instant::now();
             let dt = now.duration_since(time).as_secs_f64();
+            print!("\r {dt}");
             time = now;
-            map::map(&mut world, &dt);
+            map::map(&mut world, &dt, logic_channels);
             render(&world, render_data);
+            if dt < 0.001 {
+            std::thread::sleep(Duration::from_secs_f64(0.001 - dt));
+            }
         }
     }
 }
@@ -43,9 +47,18 @@ fn render(world: &World, render: &ArcSwap<RenderData>) {
             });
             data as Box<dyn Render + Send + Sync>
         }).collect();
+
+    let (position, player) = world.borrow::<(View<Position>, View<Player>)>().unwrap();
+
+    let position = (&position, &player).iter().next().unwrap().0.0;
+    dbg!(&position);
+    let player = PlayerData {
+        position: Vector2::new(position.x as f32, position.y as f32)
+    };
     
     let render_data = RenderData {
-        data
+        data,
+        player
     };
 
     render.swap(Arc::new(render_data));
