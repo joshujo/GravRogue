@@ -22,6 +22,8 @@ The next build will focus on moons and kinetic energy dumb projectiles. These pr
 
 **W, A, S, D** to accelerate, acceleration is dependent on the surface gravity of the planet you spawn on multiplied by 10.
 
+**Q, E** to zoom in and out.
+
 **R** to exit to main menu.
 
 **Esc** to exit the game.
