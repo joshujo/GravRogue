@@ -7,7 +7,7 @@ use shipyard::World;
 
 use crate::logic::map::bodies::{ Acceleration, Colour, Density, Impulse, Mass, Planet, PlanetData, Player, PlayerAcceleration, Position, Size, Star, Velocity };
 
-const GRAVITATIONAL_CONSTANT: f64 = 0.00667;
+const GRAVITATIONAL_CONSTANT: f64 = 0.000667;
 
 pub fn generate_galaxy() -> World {
     let mut world = World::new();
@@ -40,7 +40,13 @@ fn add_planet(world: &mut World, star: &Star) -> PlanetData {
     let period = f64::sqrt((planet_orbit * planet_orbit * planet_orbit ) / star.k);
 
     let velocity = (2.0 * f64::consts::PI * planet_orbit) / period;
-    let velocity = DVec2 { x: velocity * f64::sin(angle), y: velocity * f64::cos(angle) };
+
+    let position = DVec2 { x: planet_orbit * f64::cos(angle), y: planet_orbit * f64::sin(angle) };
+    let direction = position.normalize();
+
+    let tangent = DVec2::new(direction.x, -direction.y);
+    let velocity = tangent * velocity;
+
 
     let density = random_range(1.0..=10.0);
     let size = random_range(300.0..2000.0);
@@ -56,7 +62,7 @@ fn add_planet(world: &mut World, star: &Star) -> PlanetData {
         Colour(Color::BLUE),
         Velocity(velocity),
         Acceleration(DVec2 { x: 0.0, y: 0.0 }),
-        Position(DVec2 { x: planet_orbit * f64::sin(angle), y: planet_orbit * f64::cos(angle) }),
+        Position(position),
         Impulse(DVec2::ZERO),
         Mass(mass)
     ));
@@ -66,18 +72,18 @@ fn add_planet(world: &mut World, star: &Star) -> PlanetData {
         radius: size,
         velocity,
         mass,
-        position: DVec2 { x: planet_orbit * f64::sin(angle), y: planet_orbit * f64::cos(angle) }
+        position: DVec2 { x: planet_orbit * f64::cos(angle), y: planet_orbit * f64::sin(angle) }
     }
 }
 
 fn add_player(world: &mut World, planet: &PlanetData) {
     let density = 1.0;
-    let size = 5.0;
+    let size = 2.0;
     let mass = (4.0/3.0) * (size * size * size) * density * f64::consts::PI;
 
     let player_acc = planet.grav_acc * 1.0;
 
-    let radius = planet.radius * 1.05;
+    let radius = planet.radius * 1.1;
 
     let velocity = f64::sqrt((GRAVITATIONAL_CONSTANT * planet.mass) / radius);
     let velocity = DVec2::new(planet.velocity.x + velocity, planet.velocity.y);

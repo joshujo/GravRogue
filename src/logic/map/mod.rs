@@ -11,7 +11,7 @@ pub mod generate_galaxy;
 
 use crate::core::INPUT_STATE;
 
-const GRAVITATIONAL_CONSTANT: f64 = 0.00667;
+const GRAVITATIONAL_CONSTANT: f64 = 0.000667;
 
 pub fn map(world: &mut World, dt: &f64, channels: &LogicChannels) {
     world.run(gravity_force);
