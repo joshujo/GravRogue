@@ -16,7 +16,7 @@ pub enum Input {
 }
 
 pub enum Output {
-    
+    EndGame
 }
 
 #[derive(Default)]
@@ -29,3 +29,4 @@ pub struct RenderData {
 pub struct PlayerData {
     pub position: Vector2
 }
+

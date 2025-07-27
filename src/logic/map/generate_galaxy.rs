@@ -7,25 +7,43 @@ use shipyard::World;
 
 use crate::logic::map::bodies::{ Acceleration, Colour, Density, Impulse, Mass, Planet, PlanetData, Player, PlayerAcceleration, Position, Size, Star, Velocity };
 
-const GRAVITATIONAL_CONSTANT: f64 = 0.667;
+const GRAVITATIONAL_CONSTANT: f64 = 0.00667;
 
 pub fn generate_galaxy() -> World {
     let mut world = World::new();
     let star = generate_star(&mut world);
     let planet = add_planet(&mut world, &star);
     add_player(&mut world, &planet);
+    add_planet(&mut world, &star);
+    add_planet(&mut world, &star);
+    add_planet(&mut world, &star);
+    add_planet(&mut world, &star);
+    add_planet(&mut world, &star);
+    add_planet(&mut world, &star);
+    add_planet(&mut world, &star);
+    add_planet(&mut world, &star);
+    add_planet(&mut world, &star);
+    add_planet(&mut world, &star);
+    add_planet(&mut world, &star);
+    add_planet(&mut world, &star);
+    add_planet(&mut world, &star);
+    add_planet(&mut world, &star);
+    add_planet(&mut world, &star);
     world
 }
 
 fn add_planet(world: &mut World, star: &Star) -> PlanetData {
-    let planet_orbit = random_range(10.0..=100.0) * star.size;
+    let planet_orbit = random_range(10.0..=80.0) * star.size;
+
+    let angle: f64 = random_range(0.0..=360.0_f64).to_radians();
 
     let period = f64::sqrt((planet_orbit * planet_orbit * planet_orbit ) / star.k);
 
     let velocity = (2.0 * f64::consts::PI * planet_orbit) / period;
+    let velocity = DVec2 { x: velocity * f64::sin(angle), y: velocity * f64::cos(angle) };
 
-    let density = random_range(1.0..=15.0);
-    let size = random_range(800.0..12000.0);
+    let density = random_range(1.0..=10.0);
+    let size = random_range(300.0..2000.0);
 
     let mass = (4.0/3.0) * (size * size * size) * density * f64::consts::PI;
 
@@ -36,9 +54,9 @@ fn add_planet(world: &mut World, star: &Star) -> PlanetData {
         Density(density),
         Size(size),
         Colour(Color::BLUE),
-        Velocity(DVec2 { x: velocity, y: 0.0 }),
+        Velocity(velocity),
         Acceleration(DVec2 { x: 0.0, y: 0.0 }),
-        Position(DVec2 { x: 0.0, y: planet_orbit }),
+        Position(DVec2 { x: planet_orbit * f64::sin(angle), y: planet_orbit * f64::cos(angle) }),
         Impulse(DVec2::ZERO),
         Mass(mass)
     ));
@@ -46,19 +64,24 @@ fn add_planet(world: &mut World, star: &Star) -> PlanetData {
     PlanetData {
         grav_acc,
         radius: size,
-        orbital_radius: planet_orbit,
-        velocity
+        velocity,
+        mass,
+        position: DVec2 { x: planet_orbit * f64::sin(angle), y: planet_orbit * f64::cos(angle) }
     }
 }
 
 fn add_player(world: &mut World, planet: &PlanetData) {
-    let position = DVec2::new(0.0, planet.orbital_radius + 2.0);
-    let velocity = DVec2::new(planet.velocity, 0.0);
-    let player_acc = planet.grav_acc * 10.0;
     let density = 1.0;
-    let size = 1.0;
-
+    let size = 5.0;
     let mass = (4.0/3.0) * (size * size * size) * density * f64::consts::PI;
+
+    let player_acc = planet.grav_acc * 1.0;
+
+    let radius = planet.radius * 1.05;
+
+    let velocity = f64::sqrt((GRAVITATIONAL_CONSTANT * planet.mass) / radius);
+    let velocity = DVec2::new(planet.velocity.x + velocity, planet.velocity.y);
+    let position = DVec2::new(planet.position.x, planet.position.y + radius);
 
     world.add_entity((
         Density(density),
@@ -75,8 +98,8 @@ fn add_player(world: &mut World, planet: &PlanetData) {
 }
 
 fn generate_star(world: &mut World) -> Star {
-    let density = random_range(1.0..=30.0);
-    let size = random_range(10000.0..=100000.0);
+    let density = random_range(1.0..=20.0);
+    let size = random_range(5000.0..=15000.0);
 
     let mass = (4.0/3.0) * f64::consts::PI * (size * size * size) * density;
     
@@ -88,12 +111,13 @@ fn generate_star(world: &mut World) -> Star {
         Colour(Color::WHITE),
         Velocity(DVec2 { x: 0.0, y: 0.0 }),
         Acceleration(DVec2 { x: 0.0, y: 0.0 }),
-        Position(DVec2 { x: 0.0, y: 0.0 })
+        Mass(mass),
+        Position(DVec2 { x: 0.0, y: 0.0 }),
+        Impulse(DVec2 { x: 0.0, y: 0.0 })
     ));
 
     Star {
         size,
-        mass,
         k,
     }
 }

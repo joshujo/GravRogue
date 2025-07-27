@@ -4,37 +4,55 @@ use glam::DVec2;
 use shipyard::{world::World, IntoIter, View, ViewMut};
 use rayon::{self, iter::{IntoParallelRefMutIterator, ParallelIterator}};
 
-use crate::{core::channels::LogicChannels, logic::map::bodies::{Acceleration, Density, Impulse, Mass, Player, Position, Size, Velocity}};
+use crate::{core::channels::LogicChannels, logic::map::bodies::{Acceleration, Density, Impulse, Mass, Player, PlayerAcceleration, Position, Size, Velocity}};
 
 pub mod bodies;
 pub mod generate_galaxy;
 
+use crate::core::INPUT_STATE;
+
+const GRAVITATIONAL_CONSTANT: f64 = 0.00667;
+
 pub fn map(world: &mut World, dt: &f64, channels: &LogicChannels) {
     world.run(gravity_force);
-    if let Ok(ok) = channels.input_r.try_recv() {
-        match ok {
-            crate::core::channel_data::Input::Acceleration(player_acc) => {
-                world.run(|acceleration: ViewMut<Acceleration>, player: View<Player>| {
-                    player_movement(acceleration, player, player_acc);
-                });
-            }
+
+    let input = INPUT_STATE.load();
+
+    let player_acc = {
+        let mut acc = DVec2::ZERO;
+        if input.up {
+            acc.y += 1.0
         }
-    }
+        if input.down {
+            acc.y -= 1.0
+        }
+        if input.left {
+            acc.x -= 1.0 
+        }
+        if input.right {
+            acc.x += 1.0
+        }
+        acc
+    };
+
+    world.run(|acceleration: ViewMut<Acceleration>, player: View<Player>, player_accel: View<PlayerAcceleration>| {
+                    player_movement(acceleration, player, player_accel, player_acc);
+                });
     world.run(|position: ViewMut<Position>, velocity: ViewMut<Velocity>, acceleration: ViewMut<Acceleration>| {
         apply_forces(position, velocity, acceleration, dt);
     });
     world.run(collision);
+    world.run(apply_impulse)
 }
 
-fn player_movement(mut acceleration: ViewMut<Acceleration>, player: View<Player>, player_acc: DVec2) {
-    (&mut acceleration, &player).iter()
-        .for_each(|(acceleration, _)| {
-            acceleration.0 += player_acc
+fn player_movement(mut acceleration: ViewMut<Acceleration>, player: View<Player>, player_accel: View<PlayerAcceleration>, player_acc: DVec2) {
+    (&mut acceleration, &player, &player_accel).iter()
+        .for_each(|(acceleration, _, player_accel)| {
+            acceleration.0 += player_acc * player_accel.0
         });
 }
 
 fn gravity_force(mut acceleration: ViewMut<Acceleration>, density: View<Density>, size: View<Size>, position: View<Position>) {
-    const GRAVITATIONAL_CONSTANT: f64 = 0.667;
 
     let bodies: Vec<_> = (&position, &density, &size)
         .iter()
@@ -116,11 +134,23 @@ fn collision(pos: ViewMut<Position>, size: View<Size>, velocity: View<Velocity>,
                     continue;
                 }
 
-                let restitution = 0.1;
-                let impulse_magnitude = -(1.0 + restitution) * speed_along_normal / (1.0 / mass_a.0 / *mass_b);
+                let restitution = 0.01;
+                let impulse_magnitude = -(1.0 + restitution) * speed_along_normal / (1.0 / mass_a.0 + 1.0 / *mass_b);
 
-                impulse.0 += impulse_magnitude;
+
+                impulse.0 += normal * impulse_magnitude;
             }
 
+        });
+}
+
+fn apply_impulse(mut velocity: ViewMut<Velocity>, mut impulse: ViewMut<Impulse>, mass: View<Mass>) {
+    let mut bodies: Vec<_> = (&mut velocity, &mut impulse, &mass).par_iter()
+        .collect();
+
+    bodies.par_iter_mut()
+        .for_each(|(vel, impulse, mass )| {
+            vel.0 += impulse.0 / mass.0;
+            impulse.0 = DVec2::ZERO;
         });
 }

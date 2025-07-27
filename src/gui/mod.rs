@@ -1,4 +1,4 @@
-use std::collections::HashMap;
+use std::{any::Any, collections::HashMap};
 
 use crate::{core::{channel_data::RenderData, channels::GuiChannels, GameState, ImguiCacheBuffer}, gui::{fonts::{fonts, Font}, game::game, main_menu::main_menu, window_data::WindowData}};
 use arc_swap::ArcSwap;
@@ -22,7 +22,10 @@ pub struct Gui<'a> {
     camera: Camera2D
 }
 
-pub trait ImguiCache {}
+pub trait ImguiCache: Any {
+    fn as_any(&self) -> &dyn Any;
+    fn as_any_mut(&mut self) -> &mut dyn Any;
+}
 
 impl <'a>Gui<'a> {
     pub fn new(rl: &mut RaylibHandle, thread: &RaylibThread, channels: &'a GuiChannels) -> Self {
@@ -34,7 +37,7 @@ impl <'a>Gui<'a> {
             offset: Vector2::new(window_data.center_x(), window_data.center_y()),
             target: Vector2::new(0.0, 0.0),
             rotation: 0.0,
-            zoom: 0.001
+            zoom: 0.1
         };
 
         Gui { 

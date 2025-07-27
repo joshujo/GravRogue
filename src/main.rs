@@ -1,8 +1,13 @@
+#![windows_subsystem = "windows"]
+
 use std::{sync::Arc, thread};
 
 use arc_swap::ArcSwap;
-use grav_rogue::{core::{channel_data::RenderData, channels::Channel}, gui::Gui, logic::logic};
+use grav_rogue::{core::{channel_data::RenderData, channels::Channel, InputState}, gui::Gui, logic::logic};
 use raylib::prelude::*;
+use raylib::consts::KeyboardKey::*;
+
+use grav_rogue::core::INPUT_STATE;
 
 fn main() {
     let (mut rl, thread) = raylib::init()
@@ -33,6 +38,19 @@ fn main() {
     while !rl.window_should_close() {
         let mut d = rl.begin_drawing(&thread);
         d.clear_background(Color::BLACK);
+
+        let input = InputState {
+        up: d.is_key_down(KEY_W),
+        down: d.is_key_down(KEY_S),
+        left: d.is_key_down(KEY_A),
+        right: d.is_key_down(KEY_D),
+        restart: d.is_key_pressed(KEY_R)
+        };
+
+        INPUT_STATE.store(Arc::new(input));
+
         gui.tick(&mut d, &render_data_2);
     }
 }
+
+

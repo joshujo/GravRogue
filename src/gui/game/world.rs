@@ -1,16 +1,20 @@
 use arc_swap::ArcSwap;
-use glam::DVec2;
-use raylib::{camera::{self, Camera2D}, prelude::{RaylibDrawHandle, RaylibMode2DExt}};
-use raylib::consts::KeyboardKey::*;
 
-use crate::{core::channel_data::{Input, RenderData}, gui::Gui};
+use raylib::{ math::Vector2, prelude::{RaylibDrawHandle, RaylibMode2DExt}};
+
+use crate::{core::channel_data::{Input, RenderData}, gui::{window_data, Gui, ImguiCache}};
 
 pub fn world(gui: &mut Gui, rl: &mut RaylibDrawHandle, render_data: &ArcSwap<RenderData>) {
+    let data = &render_data.load();
+    gui.camera.target = Vector2::new(data.player.position.x * 100.0, -data.player.position.y * 100.0);
     let mut d: raylib::prelude::RaylibMode2D<'_, RaylibDrawHandle<'_>> = rl.begin_mode2D(gui.camera);
 
-    let data = &render_data.load();
+    let buffer = DebugImguiBuffer {
+        player_position: data.player.position * 100.0
+    };
 
-    gui.camera.target = data.player.position;
+    gui.imgui_cache.insert(crate::core::ImguiCacheBuffer::Debug, Box::new(buffer));
+    
 
     data.data.iter()
         .for_each(|object| {
@@ -18,25 +22,21 @@ pub fn world(gui: &mut Gui, rl: &mut RaylibDrawHandle, render_data: &ArcSwap<Ren
         });
 
     {
-        let mut player_acc = DVec2::ZERO;
-
-        if d.is_key_down(KEY_W) {
-            player_acc.y += 1.0
-        }
-        if d.is_key_down(KEY_S) {
-            player_acc.y -= 1.0
-        }
-        if d.is_key_down(KEY_A) {
-            player_acc.x -= 1.0
-        }
-        if d.is_key_down(KEY_D) {
-            player_acc.x += 1.0
-        }
-
-        if player_acc != DVec2::ZERO {
-            gui.channels.input_s.send(Input::Acceleration(player_acc)).unwrap();
-        }
-    }
-
+        
 
 }
+
+pub struct DebugImguiBuffer {
+    pub player_position: Vector2
+}
+
+impl ImguiCache for DebugImguiBuffer  {
+    fn as_any(&self) -> &dyn std::any::Any {
+        self
+    }
+
+    fn as_any_mut(&mut self) -> &mut dyn std::any::Any {
+        self
+    }
+}}
+

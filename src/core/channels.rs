@@ -1,8 +1,6 @@
-use std::process::Output;
-
 use crossbeam::{self, channel::{unbounded, Receiver, Sender}};
 
-use crate::core::channel_data::{Input, MainMenu, StartGame};
+use crate::core::channel_data::{Input, MainMenu, Output, StartGame};
 
 pub struct Channel {
     pub main_menu_s: Sender<MainMenu>,

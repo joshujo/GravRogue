@@ -28,7 +28,6 @@ pub struct Mass(pub f64);
 
 pub struct Star {
     pub size: f64,
-    pub mass: f64,
     pub k: f64,
 }
 
@@ -41,8 +40,9 @@ pub struct PlayerAcceleration(pub f64);
 pub struct PlanetData {
     pub grav_acc: f64,
     pub radius: f64,
-    pub orbital_radius: f64,
-    pub velocity: f64,
+    pub velocity: DVec2,
+    pub mass: f64,
+    pub position: DVec2
 }
 
 #[derive(Component)]

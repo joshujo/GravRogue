@@ -5,11 +5,13 @@ use raylib::math::Vector2;
 use rayon::iter::{IntoParallelRefIterator, ParallelIterator};
 use shipyard::{IntoIter, View, World};
 
-use crate::{core::{channel_data::{PlayerData, RenderData, StartGame}, channels::LogicChannels, render_data::{Circle, Render}}, logic::map::{bodies::{Colour, Planet, Player, Position, Size}, generate_galaxy}};
+use crate::{core::{channel_data::{Output, PlayerData, RenderData, StartGame}, channels::LogicChannels, render_data::{Circle, Render}}, logic::map::{bodies::{Colour, Player, Position, Size}, generate_galaxy}};
 mod map;
+use crate::core::INPUT_STATE;
 
 pub fn logic(logic_channels: &LogicChannels, render_data: &ArcSwap<RenderData>) {
     let mut time;
+    
     loop {
         let _ = logic_channels.main_menu_r.recv().unwrap();
         println!("Logic thread received start game");
@@ -17,9 +19,13 @@ pub fn logic(logic_channels: &LogicChannels, render_data: &ArcSwap<RenderData>) 
         let mut world = generate_galaxy::generate_galaxy();
         time = std::time::Instant::now();
         loop {
+            let input = INPUT_STATE.load();
+            if input.restart {
+                logic_channels.output_s.send(Output::EndGame).unwrap();
+                break;
+            }
             let now = std::time::Instant::now();
             let dt = now.duration_since(time).as_secs_f64();
-            print!("\r {dt}");
             time = now;
             map::map(&mut world, &dt, logic_channels);
             render(&world, render_data);
@@ -51,7 +57,7 @@ fn render(world: &World, render: &ArcSwap<RenderData>) {
     let (position, player) = world.borrow::<(View<Position>, View<Player>)>().unwrap();
 
     let position = (&position, &player).iter().next().unwrap().0.0;
-    dbg!(&position);
+
     let player = PlayerData {
         position: Vector2::new(position.x as f32, position.y as f32)
     };

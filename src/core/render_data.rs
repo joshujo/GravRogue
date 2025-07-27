@@ -1,4 +1,4 @@
-use raylib::{camera::Camera2D, color::Color, math::Vector2, prelude::{RaylibDraw, RaylibDrawHandle, RaylibMode2D}};
+use raylib::{color::Color, math::Vector2, prelude::{RaylibDraw, RaylibDrawHandle}};
 
 pub trait Render: Send + Sync {
     fn draw(&self, rl: &mut raylib::prelude::RaylibMode2D<'_, RaylibDrawHandle<'_>>);
@@ -12,6 +12,8 @@ pub struct Circle {
 
 impl Render for Circle {
     fn draw(&self, rl: &mut raylib::prelude::RaylibMode2D<'_, RaylibDrawHandle<'_>>) {
-        rl.draw_circle((self.position.x * 1000.0) as i32, (self.position.y * 1000.0) as i32, self.radius * 1000.0, self.colour);
+        //rl.draw_circle((self.position.x * 100.0) as i32, (self.position.y * 100.0) as i32, self.radius * 100.0, self.colour);
+        let center = Vector2::new(self.position.x * 100.0, -(self.position.y * 100.0));
+        rl.draw_circle_sector(center, self.radius * 100.0, 0.0, 360.0, 2048, self.colour);
     }
 }
