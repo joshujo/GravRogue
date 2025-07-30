@@ -1,12 +1,13 @@
 use arc_swap::ArcSwap;
 
-use raylib::{ math::Vector2, prelude::{RaylibDrawHandle, RaylibMode2DExt}};
+use raylib::{ math::Vector2, prelude::{RaylibDraw, RaylibDrawHandle, RaylibMode2DExt}};
 
 use crate::{core::channel_data::{Input, RenderData}, gui::{window_data, Gui, ImguiCache}};
 
 pub fn world(gui: &mut Gui, rl: &mut RaylibDrawHandle, render_data: &ArcSwap<RenderData>) {
     let data = &render_data.load();
-    gui.camera.target = Vector2::new(data.player.position.x * 100.0, -data.player.position.y * 100.0);
+    gui.camera.rotation = data.player.camera_angle.to_degrees();
+    rl.draw_text(&gui.camera.rotation.to_string(), 500, 0, 50, raylib::color::Color::WHITE);
     let mut d: raylib::prelude::RaylibMode2D<'_, RaylibDrawHandle<'_>> = rl.begin_mode2D(gui.camera);
 
     let buffer = DebugImguiBuffer {
@@ -18,7 +19,7 @@ pub fn world(gui: &mut Gui, rl: &mut RaylibDrawHandle, render_data: &ArcSwap<Ren
 
     data.data.iter()
         .for_each(|object| {
-            object.as_ref().draw(&mut d);
+            object.as_ref().draw(&mut d, &data.player.position);
         });
 
     {

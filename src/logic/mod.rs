@@ -5,7 +5,7 @@ use raylib::math::Vector2;
 use rayon::iter::{IntoParallelRefIterator, ParallelIterator};
 use shipyard::{IntoIter, View, World};
 
-use crate::{core::{channel_data::{Output, PlayerData, RenderData, StartGame}, channels::LogicChannels, render_data::{Circle, Render}}, logic::map::{bodies::{Colour, Player, Position, Size}, generate_galaxy}};
+use crate::{core::{channel_data::{Output, PlayerData, RenderData, StartGame}, channels::LogicChannels, render_data::{Circle, Render}}, logic::map::{bodies::{CameraAngle, Colour, Player, Position, Size}, generate_galaxy}};
 mod map;
 use crate::core::INPUT_STATE;
 
@@ -54,12 +54,13 @@ fn render(world: &World, render: &ArcSwap<RenderData>) {
             data as Box<dyn Render + Send + Sync>
         }).collect();
 
-    let (position, player) = world.borrow::<(View<Position>, View<Player>)>().unwrap();
+    let (position, player, camera) = world.borrow::<(View<Position>, View<Player>, View<CameraAngle>)>().unwrap();
 
-    let position = (&position, &player).iter().next().unwrap().0.0;
+    let (position, _, camera) = (&position, &player, &camera).iter().next().unwrap();
 
     let player = PlayerData {
-        position: Vector2::new(position.x as f32, position.y as f32)
+        position: Vector2::new(position.0.x as f32, position.0.y as f32),
+        camera_angle: camera.0
     };
     
     let render_data = RenderData {

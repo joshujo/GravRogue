@@ -47,3 +47,6 @@ pub struct PlanetData {
 
 #[derive(Component)]
 pub struct Impulse(pub DVec2);
+
+#[derive(Component)]
+pub struct CameraAngle(pub f32);

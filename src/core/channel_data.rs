@@ -27,6 +27,7 @@ pub struct RenderData {
 
 #[derive(Default)]
 pub struct PlayerData {
-    pub position: Vector2
+    pub position: Vector2,
+    pub camera_angle: f32
 }
 

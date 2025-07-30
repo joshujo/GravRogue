@@ -5,7 +5,7 @@ use rand::{self, random_range};
 use raylib::color::Color;
 use shipyard::World;
 
-use crate::logic::map::bodies::{ Acceleration, Colour, Density, Impulse, Mass, Planet, PlanetData, Player, PlayerAcceleration, Position, Size, Star, Velocity };
+use crate::logic::map::bodies::{ Acceleration, CameraAngle, Colour, Density, Impulse, Mass, Planet, PlanetData, Player, PlayerAcceleration, Position, Size, Star, Velocity };
 
 const GRAVITATIONAL_CONSTANT: f64 = 0.000667;
 
@@ -81,7 +81,7 @@ fn add_player(world: &mut World, planet: &PlanetData) {
     let size = 2.0;
     let mass = (4.0/3.0) * (size * size * size) * density * f64::consts::PI;
 
-    let player_acc = planet.grav_acc * 1.0;
+    let player_acc = planet.grav_acc * 1.1;
 
     let radius = planet.radius * 1.1;
 
@@ -89,7 +89,7 @@ fn add_player(world: &mut World, planet: &PlanetData) {
     let velocity = DVec2::new(planet.velocity.x + velocity, planet.velocity.y);
     let position = DVec2::new(planet.position.x, planet.position.y + radius);
 
-    world.add_entity((
+    let player = world.add_entity((
         Density(density),
         Size(size),
         Colour(Color::GREEN),
@@ -99,8 +99,10 @@ fn add_player(world: &mut World, planet: &PlanetData) {
         Player,
         PlayerAcceleration(player_acc),
         Impulse(DVec2::ZERO),
-        Mass(mass)
+        Mass(mass),
     ));
+
+    world.add_component(player, CameraAngle(0.0));
 }
 
 fn generate_star(world: &mut World) -> Star {
