@@ -17,7 +17,7 @@ pub struct Colour(pub Color);
 #[derive(Component)]
 pub struct Velocity(pub DVec2);
 
-#[derive(Component)]
+#[derive(Component, Default)]
 pub struct Acceleration(pub DVec2);
 
 #[derive(Component)]
@@ -25,6 +25,9 @@ pub struct Position(pub DVec2);
 
 #[derive(Component)]
 pub struct Mass(pub f64);
+
+#[derive(Component)]
+pub struct Terrain(pub Vec<TerrainData>);
 
 pub struct Star {
     pub size: f64,
@@ -50,3 +53,12 @@ pub struct Impulse(pub DVec2);
 
 #[derive(Component)]
 pub struct CameraAngle(pub f32);
+
+pub struct TerrainData {
+    pub angle: f32,
+    pub radius: f32
+}
+
+#[derive(Component)]
+pub struct Projectile;
+

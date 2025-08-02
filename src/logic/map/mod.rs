@@ -2,7 +2,6 @@ use core::f32;
 use std::f64;
 
 use glam::DVec2;
-use raylib::camera;
 use shipyard::{ world::World, Get, IntoIter, View, ViewMut };
 use rayon::{ self, iter::{ IntoParallelRefMutIterator, ParallelIterator } };
 
@@ -12,6 +11,8 @@ use crate::{
         Acceleration, CameraAngle, Density, Impulse, Mass, Player, PlayerAcceleration, Position, Size, Velocity
     },
 };
+
+pub mod projectiles;
 
 pub mod bodies;
 pub mod generate_galaxy;
@@ -248,3 +249,4 @@ fn apply_impulse(mut velocity: ViewMut<Velocity>, mut impulse: ViewMut<Impulse>,
         impulse.0 = DVec2::ZERO;
     });
 }
+

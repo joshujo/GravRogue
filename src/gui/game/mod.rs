@@ -1,5 +1,4 @@
 use arc_swap::ArcSwap;
-use crossbeam::channel::Receiver;
 use raylib::{ math::Vector2, prelude::{ Color, RaylibDraw, RaylibDrawHandle } };
 mod world;
 use raylib::consts::KeyboardKey::*;
@@ -19,7 +18,8 @@ pub fn game(gui: &mut Gui, rl: &mut RaylibDrawHandle, render_data: &ArcSwap<Rend
     if let Ok(r) = gui.channels.output_r.try_recv() {
         match r {
             crate::core::channel_data::Output::EndGame => {
-                gui.state = GameState::MainMenu
+                gui.state = GameState::MainMenu;
+                gui.planet_textures.clear();
             }
         }
     }
@@ -36,11 +36,11 @@ pub fn game(gui: &mut Gui, rl: &mut RaylibDrawHandle, render_data: &ArcSwap<Rend
             match scroll {
                 Scroll::Up => {
                         gui.camera.zoom *= 1.0 + 1.0 * 0.05;
-                        gui.camera.zoom = gui.camera.zoom.clamp(0.0000001, 1.0);
+                        gui.camera.zoom = gui.camera.zoom.clamp(0.0000000000001, 0.1);
                 },
                 Scroll::Down => {
                         gui.camera.zoom *= 1.0 - 1.0 * 0.05;
-                        gui.camera.zoom = gui.camera.zoom.clamp(0.0000001, 1.0);
+                        gui.camera.zoom = gui.camera.zoom.clamp(0.0000000000001, 0.1);
                 }
             }
         }

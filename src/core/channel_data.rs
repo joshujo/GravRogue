@@ -12,7 +12,10 @@ pub enum StartGame {
 }
 
 pub enum Input {
-    Acceleration(DVec2)
+    Acceleration(DVec2),
+    FireProjectile {
+        angle: f64,
+    }
 }
 
 pub enum Output {

@@ -1,11 +1,11 @@
-use std::f64;
+use std::{f32, f64};
 
 use glam::DVec2;
 use rand::{self, random_range};
 use raylib::color::Color;
 use shipyard::World;
 
-use crate::logic::map::bodies::{ Acceleration, CameraAngle, Colour, Density, Impulse, Mass, Planet, PlanetData, Player, PlayerAcceleration, Position, Size, Star, Velocity };
+use crate::logic::map::bodies::{ Acceleration, CameraAngle, Colour, Density, Impulse, Mass, Planet, PlanetData, Player, PlayerAcceleration, Position, Size, Star, Terrain, TerrainData, Velocity };
 
 const GRAVITATIONAL_CONSTANT: f64 = 0.000667;
 
@@ -49,7 +49,7 @@ fn add_planet(world: &mut World, star: &Star) -> PlanetData {
 
 
     let density = random_range(1.0..=10.0);
-    let size = random_range(300.0..2000.0);
+    let size = random_range(1500.0..10000.0);
 
     let mass = (4.0/3.0) * (size * size * size) * density * f64::consts::PI;
 
@@ -64,7 +64,7 @@ fn add_planet(world: &mut World, star: &Star) -> PlanetData {
         Acceleration(DVec2 { x: 0.0, y: 0.0 }),
         Position(position),
         Impulse(DVec2::ZERO),
-        Mass(mass)
+        Mass(mass),
     ));
 
     PlanetData {
@@ -107,7 +107,7 @@ fn add_player(world: &mut World, planet: &PlanetData) {
 
 fn generate_star(world: &mut World) -> Star {
     let density = random_range(1.0..=20.0);
-    let size = random_range(5000.0..=15000.0);
+    let size = random_range(30000.0..=300000.0);
 
     let mass = (4.0/3.0) * f64::consts::PI * (size * size * size) * density;
     

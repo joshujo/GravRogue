@@ -1,4 +1,4 @@
-#![windows_subsystem = "windows"]
+//#![windows_subsystem = "windows"]
 
 use std::{sync::Arc, thread};
 
@@ -16,6 +16,8 @@ fn main() {
         .vsync()
         .resizable()
         .build();
+
+    
 
     let render_data = RenderData::default();
     let render_data = Arc::new(ArcSwap::new(Arc::new(render_data)));

@@ -3,8 +3,9 @@ use std::{any::Any, collections::HashMap};
 use crate::{core::{channel_data::RenderData, channels::GuiChannels, GameState, ImguiCacheBuffer}, gui::{fonts::{fonts, Font}, game::game, main_menu::main_menu, window_data::WindowData}};
 use arc_swap::ArcSwap;
 use imgui::{self, Context, FontId};
-use raylib::{camera::Camera2D, math::Vector2, prelude::RaylibDrawHandle, RaylibHandle, RaylibThread};
+use raylib::{camera::Camera2D, math::Vector2, prelude::RaylibDrawHandle, texture::Texture2D, RaylibHandle, RaylibThread};
 use raylib_imgui_rs::{self, Renderer};
+use shipyard::EntityId;
 mod main_menu;
 mod fonts;
 mod window_data;
@@ -19,7 +20,9 @@ pub struct Gui<'a> {
     renderer: Renderer,
     imgui_cache: HashMap<ImguiCacheBuffer, Box<dyn ImguiCache>>,
     window_data: WindowData,
-    camera: Camera2D
+    camera: Camera2D,
+    pub planet_textures: HashMap<EntityId, Texture2D>,
+    pub thread: &'a RaylibThread
 }
 
 pub trait ImguiCache: Any {
@@ -28,7 +31,7 @@ pub trait ImguiCache: Any {
 }
 
 impl <'a>Gui<'a> {
-    pub fn new(rl: &mut RaylibHandle, thread: &RaylibThread, channels: &'a GuiChannels) -> Self {
+    pub fn new(rl: &mut RaylibHandle, thread: &'a RaylibThread, channels: &'a GuiChannels) -> Self {
         let mut imgui = Context::create();
         let fonts = fonts(&mut imgui);
         let renderer = Renderer::create(&mut imgui,rl, &thread);
@@ -48,7 +51,9 @@ impl <'a>Gui<'a> {
             renderer,
             imgui_cache: HashMap::new(),
             window_data,
-            camera
+            camera,
+            planet_textures: HashMap::new(),
+            thread
         }
     }
 

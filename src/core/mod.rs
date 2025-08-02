@@ -1,5 +1,6 @@
 use arc_swap::ArcSwap;
 use once_cell::sync::Lazy;
+pub mod texture_gen;
 
 pub mod channel_data;
 pub mod channels;
